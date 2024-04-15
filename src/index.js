@@ -1,53 +1,58 @@
-// Your code here
-const db = "http://localhost:3000/films"
+// Database URL
+const movieApiUrl = "http://localhost:3000/films";
 
 document.addEventListener("DOMContentLoaded", () => {
-    getMovies();
-    document.querySelector("#buy-ticket").addEventListener("click", handleBuyTicket);
+  fetchMovies();
+  document.querySelector("#buy-ticket").addEventListener("click", handleTicketPurchase);
 });
 
-function getMovies() {
-    fetch(db)
-    .then(res => res.json())
+function fetchMovies() {
+  fetch(movieApiUrl)
+    .then(response => response.json())
     .then(movies => {
-        movies.forEach(movie => {renderMovieList(movie)})
-        const firstMovie = document.querySelector("#id1");
-        firstMovie.dispatchEvent(new Event("click"));
+      displayMovies(movies);
+      const firstMovieItem = document.querySelector("#id1");
+      firstMovieItem.dispatchEvent(new Event("click"));
     })
+    .catch(error => console.error(error));  // Handle potential errors during fetch
 }
 
-function renderMovieList(movie) {
-    const li = document.createElement("li");
-    li.textContent = `${movie.title}`;
-    li.id = "id" + movie.id;
-    const ul = document.querySelector("#films");
-    ul.appendChild(li);
-    li.classList.add("film");
-    li.classList.add('item');
-    li.addEventListener("click", () => {handleMovieClick(movie)})
+function displayMovies(movies) {
+  movies.forEach(movie => {
+    createMovieListItem(movie);
+  });
 }
 
-function handleMovieClick(movie) {
-    const poster = document.querySelector("img#poster")
-    poster.src = movie.poster;
-    poster.alt = movie.title;
-    const info = document.querySelector("#showing");
-    info.querySelector("#title").textContent = movie.title;
-    info.querySelector("#runtime").textContent = movie.runtime+" minutes";
-    info.querySelector("#film-info").textContent = movie.description;
-    info.querySelector("#showtime").textContent = movie.showtime;
-    info.querySelector("#ticket-num").textContent = movie.capacity - movie.tickets_sold + " remaining tickets";
+function createMovieListItem(movie) {
+  const listItem = document.createElement("li");
+  listItem.textContent = movie.title;
+  listItem.id = `id${movie.id}`;
+  const movieList = document.querySelector("#films");
+  movieList.appendChild(listItem);
+  listItem.classList.add("film", "item");
+  listItem.addEventListener("click", () => displayMovieDetails(movie));
 }
 
-function handleBuyTicket(e) {
-    const ticketDiv = document.querySelector("#ticket-num");
-    const tickets = ticketDiv.textContent.split(" ")[0];
-    if (tickets > 0) {
-        ticketDiv.textContent = tickets - 1 + " remaining tickets";
-    }
-    else if (tickets == 0) {
-        alert("No more tickets!");
-        e.target.classList.add("sold-out");
-        e.target.classList.remove("orange");
-    }
+function displayMovieDetails(movie) {
+  const posterImage = document.querySelector("img#poster");
+  posterImage.src = movie.poster;
+  posterImage.alt = movie.title;
+  const movieInfo = document.querySelector("#showing");
+  movieInfo.querySelector("#title").textContent = movie.title;
+  movieInfo.querySelector("#runtime").textContent = `${movie.runtime} minutes`;
+  movieInfo.querySelector("#film-info").textContent = movie.description;
+  movieInfo.querySelector("#showtime").textContent = movie.showtime;
+  movieInfo.querySelector("#ticket-num").textContent = `${movie.capacity - movie.tickets_sold} remaining tickets`;
+}
+
+function handleTicketPurchase(event) {
+  const ticketDisplay = document.querySelector("#ticket-num");
+  const remainingTickets = parseInt(ticketDisplay.textContent.split(" ")[0]);
+  if (remainingTickets > 0) {
+    ticketDisplay.textContent = `${remainingTickets - 1} remaining tickets`;
+  } else if (remainingTickets === 0) {
+    alert("No more tickets!");
+    event.target.classList.add("sold-out");
+    event.target.classList.remove("orange");
+  }
 }
