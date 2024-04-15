@@ -1,58 +1,61 @@
-// Database URL
+// API endpoint (consider making it configurable)
 const movieApiUrl = "http://localhost:3000/films";
 
+const movieList = document.getElementById("films");
+const buyTicketButton = document.getElementById("buy-ticket");
+
 document.addEventListener("DOMContentLoaded", () => {
-  fetchMovies();
-  document.querySelector("#buy-ticket").addEventListener("click", handleTicketPurchase);
+  Movies(movieApiUrl);
 });
 
-function fetchMovies() {
-  fetch(movieApiUrl)
-    .then(response => response.json())
-    .then(movies => {
-      displayMovies(movies);
-      const firstMovieItem = document.querySelector("#id1");
-      firstMovieItem.dispatchEvent(new Event("click"));
+function Movies(url) {
+  fetch(url)
+    .then((response) => response.json())
+    .then((movies) => {
+      movies.forEach(displayMovie);
     })
     .catch(error => console.error(error));  // Handle potential errors during fetch
 }
 
-function displayMovies(movies) {
-  movies.forEach(movie => {
-    createMovieListItem(movie);
+function displayMovie(movie) {
+  const listItem = document.createElement("li");
+  listItem.style.cursor = "pointer";
+  listItem.textContent = movie.title.toUpperCase();
+  movieList.appendChild(listItem);
+
+  listItem.addEventListener("click", () => {
+    fetch(`${url}/${movie.id}`)
+      .then((res) => res.json())
+      .then((movieDetails) => {
+        updateMovieDetails(movieDetails);
+        buyTicketButton.textContent = "Buy Ticket";
+      })
+      .catch(error => console.error(error));  // Handle potential errors during fetch
   });
 }
 
-function createMovieListItem(movie) {
-  const listItem = document.createElement("li");
-  listItem.textContent = movie.title;
-  listItem.id = `id${movie.id}`;
-  const movieList = document.querySelector("#films");
-  movieList.appendChild(listItem);
-  listItem.classList.add("film", "item");
-  listItem.addEventListener("click", () => displayMovieDetails(movie));
+function updateMovieDetails(movie) {
+  const poster = document.getElementById("poster");
+  poster.src = movie.poster;
+
+  const movieTitle = document.querySelector("#title");
+  movieTitle.textContent = movie.title;
+  const movieTime = document.querySelector("#runtime");
+  movieTime.textContent = `${movie.runtime} minutes`;
+  const movieDescription = document.querySelector("#film-info");
+  movieDescription.textContent = movie.description;
+  const showTime = document.querySelector("#showtime");
+  showTime.textContent = movie.showtime;
+  const tickets = document.querySelector("#ticket-num");
+  tickets.textContent = movie.capacity - movie.tickets_sold;
 }
 
-function displayMovieDetails(movie) {
-  const posterImage = document.querySelector("img#poster");
-  posterImage.src = movie.poster;
-  posterImage.alt = movie.title;
-  const movieInfo = document.querySelector("#showing");
-  movieInfo.querySelector("#title").textContent = movie.title;
-  movieInfo.querySelector("#runtime").textContent = `${movie.runtime} minutes`;
-  movieInfo.querySelector("#film-info").textContent = movie.description;
-  movieInfo.querySelector("#showtime").textContent = movie.showtime;
-  movieInfo.querySelector("#ticket-num").textContent = `${movie.capacity - movie.tickets_sold} remaining tickets`;
-}
-
-function handleTicketPurchase(event) {
-  const ticketDisplay = document.querySelector("#ticket-num");
-  const remainingTickets = parseInt(ticketDisplay.textContent.split(" ")[0]);
-  if (remainingTickets > 0) {
-    ticketDisplay.textContent = `${remainingTickets - 1} remaining tickets`;
-  } else if (remainingTickets === 0) {
-    alert("No more tickets!");
-    event.target.classList.add("sold-out");
-    event.target.classList.remove("orange");
+buyTicketButton.addEventListener("click", function (e) {
+  const ticketsRemaining = parseInt(document.querySelector("#ticket-num").textContent, 10);
+  e.preventDefault();
+  if (ticketsRemaining > 0) {
+    document.querySelector("#ticket-num").textContent = ticketsRemaining - 1;
+  } else if (ticketsRemaining === 0) {
+    buyTicketButton.classList.add("sold-out"); // Add a class for styling
   }
-}
+});
