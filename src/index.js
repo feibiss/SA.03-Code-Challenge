@@ -1,6 +1,5 @@
-// API endpoint (consider making it configurable)
-const movieApiUrl = "http://localhost:3000/films";
 
+const movieApiUrl = "http://localhost:3000/films";
 const movieList = document.getElementById("films");
 const buyTicketButton = document.getElementById("buy-ticket");
 
@@ -14,7 +13,7 @@ function Movies(url) {
     .then((movies) => {
       movies.forEach(displayMovie);
     })
-    .catch(error => console.error(error));  // Handle potential errors during fetch
+    .catch(error => console.error(error)); 
 }
 
 function displayMovie(movie) {
@@ -30,7 +29,7 @@ function displayMovie(movie) {
         updateMovieDetails(movieDetails);
         buyTicketButton.textContent = "Buy Ticket";
       })
-      .catch(error => console.error(error));  // Handle potential errors during fetch
+      .catch(error => console.error(error));  
   });
 }
 
@@ -56,6 +55,6 @@ buyTicketButton.addEventListener("click", function (e) {
   if (ticketsRemaining > 0) {
     document.querySelector("#ticket-num").textContent = ticketsRemaining - 1;
   } else if (ticketsRemaining === 0) {
-    buyTicketButton.classList.add("sold-out"); // Add a class for styling
+    buyTicketButton.classList.add("sold-out"); 
   }
 });
